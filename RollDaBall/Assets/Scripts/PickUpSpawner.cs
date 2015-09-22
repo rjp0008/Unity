@@ -9,6 +9,7 @@ public class PickUpSpawner : MonoBehaviour {
 	private Rigidbody rb;
 
 	public GameObject player;
+    public GameObject objectToSpawn;
 
 	void Start () {
 		rb = GetComponent<Rigidbody>();
@@ -17,7 +18,7 @@ public class PickUpSpawner : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         deltaTime += Time.deltaTime;
-        if (deltaTime > 10)
+        if (deltaTime > 1)
         {
             UdpClient client = new UdpClient();
             IPEndPoint ep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 2000); // endpoint where server is listening (testing localy)
@@ -37,6 +38,11 @@ public class PickUpSpawner : MonoBehaviour {
             ba = client.Receive(ref ep);
 
             transform.position = new Vector3(BitConverter.ToSingle(ba, 0), 5, BitConverter.ToSingle(ba, 4));
+
+            var newObject = Instantiate(objectToSpawn);
+            newObject.transform.position = transform.position;
+            newObject.SetActive(true);
+            
 
 
             deltaTime = 0;
