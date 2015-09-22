@@ -2,9 +2,9 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
 	"net"
-"encoding/binary"
 )
 
 func main() {
@@ -20,15 +20,16 @@ func main() {
 			fmt.Println(err)
 		}
 		fmt.Println(string(buf[0:rlen]))
-		var xpos float64
-		var ypos float64
-reader := bytes.NewReader(buf[:8])
-binary.Read(reader, binary.LittleEndian,&xpos)
-reader = bytes.NewReader(buf[8:rlen])
-binary.Read(reader, binary.LittleEndian,&ypos)
-fmt.Println(xpos)
-fmt.Println(ypos)
-		sock.WriteToUDP(bytes.ToUpper(buf[0:rlen]), source)
+		var xpos float32
+		var ypos float32
+		reader := bytes.NewReader(buf[:4])
+		binary.Read(reader, binary.LittleEndian, &xpos)
+		reader = bytes.NewReader(buf[4:rlen])
+		binary.Read(reader, binary.LittleEndian, &ypos)
+		fmt.Println(xpos)
+		fmt.Println(ypos)
+		fmt.Println(rlen)
+		sock.WriteToUDP(buf[0:rlen], source)
 		//go handlePacket(buf, rlen)
 	}
 }
