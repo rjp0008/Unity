@@ -26,7 +26,6 @@ func main() {
 		binary.Read(reader, binary.LittleEndian, &xpos)
 		reader = bytes.NewReader(buf[4:rlen])
 		binary.Read(reader, binary.LittleEndian, &ypos)
-		binary.Write()
 		var bin_buf bytes.Buffer
 		binary.Write(&bin_buf, binary.LittleEndian, -xpos)
 		binary.Write(&bin_buf, binary.LittleEndian, -ypos)

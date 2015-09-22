@@ -37,12 +37,11 @@ public class PickUpSpawner : MonoBehaviour {
             client.Send(ba, ba.Length);
             ba = client.Receive(ref ep);
 
-            transform.position = new Vector3(BitConverter.ToSingle(ba, 0), 5, BitConverter.ToSingle(ba, 4));
+            transform.position = new Vector3(-BitConverter.ToSingle(ba, 0), .5f, -BitConverter.ToSingle(ba, 4));
 
             var newObject = Instantiate(objectToSpawn);
             newObject.transform.position = transform.position;
             newObject.SetActive(true);
-            
 
 
             deltaTime = 0;
