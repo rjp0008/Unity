@@ -3,18 +3,20 @@ package main
 import "net"
 import "fmt"
 import "bufio"
-import "strings" // only needed below for sample processing
+import "strings"
+
 func main() {
 	fmt.Println("Launching server...") // listen on all interfaces
 
 	ln, _ := net.Listen("tcp", ":8081") // accept connection on port
-	defer ln.Close()
+
 	for {
 		conn, _ := ln.Accept()
 		go func(c net.Conn) {
+			reader := bufio.NewReader(c)
 			for { // will listen for message to process ending in newline (\n)
-				message, _ := bufio.NewReader(c).ReadString('\n') // output message received
-				fmt.Print("Message Received:", string(message))   // sample process for string received
+				message, _ := reader.ReadString('\n') // output message received
+				fmt.Println("Message Received:", string(message)) // sample process for string received
 				newmessage := strings.ToUpper(message)            // send new string back to client
 				c.Write([]byte(newmessage + "\n"))
 			}

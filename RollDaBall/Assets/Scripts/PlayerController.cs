@@ -23,9 +23,9 @@ public class PlayerController : MonoBehaviour
     {
         var horizontal = Input.GetAxis("Horizontal");
         var vertical = Input.GetAxis("Vertical");
-        var touch = Input.GetTouch(0);
 
-        var movement = new Vector3(touch.deltaPosition.x + horizontal, 0, touch.deltaPosition.y + vertical);
+
+        var movement = new Vector3(horizontal, 0,  vertical);
         
         rb.AddForce(movement*speed);
         rb.AddForce(rb.velocity * -0.1f);

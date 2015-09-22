@@ -7,6 +7,7 @@ import "os"
 
 func main() { // connect to this socket
 	conn, _ := net.Dial("tcp", "127.0.0.1:8081")
+	readCon := bufio.NewReader(conn)
 	for { // read in input from stdin
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Print("Text to send: ")
@@ -14,7 +15,7 @@ func main() { // connect to this socket
 		// send to socket
 		fmt.Fprintf(conn, text+"\n") // listen for reply
 
-		message, _ := bufio.NewReader(conn).ReadString('\n')
+		message, _ := readCon.ReadString('\n')
 		fmt.Print("Message from server: " + message)
 	}
 }
