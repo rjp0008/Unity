@@ -1,50 +1,24 @@
 package main
 
 import (
-	"fmt"
-	"net"
-	"os"
-	"time"
+  "net"
+
+  "fmt"
 )
 
 func main() {
 
-	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "Usage:%s host:port", os.Args[0])
-		os.Exit(1)
-	}
-
-	service := os.Args[1]
-
-	fmt.Println("Connecting to server at ", service)
-
-	conn, err := net.Dial("udp", service)
-
-	if err != nil {
-		fmt.Println("Could not resolve udp address or connect to it  on ", service)
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println("Connected to server at ", service)
-
-	defer conn.Close()
-
-	fmt.Println("About to write to connection")
-
-	for {
-
-		time.Sleep(1000 * time.Millisecond)
-		n, err := conn.Write([]byte("SOS ... \n"))
-		if err != nil {
-			fmt.Println("error writing data to server", service)
-			fmt.Println(err)
-			return
-		}
-
-		if n > 0 {
-			fmt.Println("Wrote ", n, " bytes to server at ", service)
-		}
-	}
-
+  num := 0
+  for i := 0; i < 100; i++ {
+    for j := 0; j < 100; j++ {
+      num++
+      con, _ := net.Dial("udp", "127.0.0.1:2000")
+      fmt.Println(num)
+      buf := []byte("bla bla bla I am the packet")
+      _, err := con.Write(buf)
+      if err != nil {
+        fmt.Println(err)
+      }
+    }
+  }
 }
