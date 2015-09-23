@@ -5,6 +5,7 @@ using System;
 using Assets.Scripts;
 using System.Net.Sockets;
 using System.Net;
+using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
 {
@@ -12,14 +13,18 @@ public class PlayerController : MonoBehaviour
     public float speed;
     public Text countText;
     public Text winText;
+    public GameObject anotherPlayer;
 
     private Rigidbody rb;
     private int score;
 
 
+
     private int id;
     private int packetNumber = 0;
 
+    Dictionary<int, GameObject> otherPlayers;
+    Dictionary<int, int> LatestUpdate;
 
     UdpClient client = new UdpClient();
     IPEndPoint ep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 2000); // endpoint where server is listening (testing localy)
@@ -27,6 +32,9 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        otherPlayers = new Dictionary<int, GameObject>();
+        LatestUpdate = new Dictionary<int, int>();
+
         rb = GetComponent<Rigidbody>();
         score = 0;
         UpdateScore();
@@ -44,6 +52,10 @@ public class PlayerController : MonoBehaviour
             var data = DataToBytes();
             client.Send(data, data.Length);
             data = client.Receive(ref ep);
+            if (data.Length > 0)
+            {
+                MakePlayersFromBytes(data);
+            }
             deltaTime = 0;
         }
         var horizontal = Input.GetAxis("Horizontal");
@@ -110,6 +122,42 @@ public class PlayerController : MonoBehaviour
 
         return output;
     }
+
+    private void MakePlayersFromBytes(byte[] data)
+    {
+        for (int x = 0; x < data.Length / 26; x += 26)
+        {
+            var xPos = BitConverter.ToSingle(data, x + 0);
+            var yPos = BitConverter.ToSingle(data, x + 4);
+
+            var xSpeed = BitConverter.ToSingle(data, x + 8);
+            var ySpeed = BitConverter.ToSingle(data, x + 12);
+
+
+            var id = BitConverter.ToInt32(data, x + 16);
+            var packetNumber = BitConverter.ToInt32(data, x + 20);
+
+            if (id != this.id)
+            {
+                if (!otherPlayers.ContainsKey(id))
+                {
+                    var newObject = Instantiate(anotherPlayer);
+                    newObject.transform.position = new Vector3(xPos, .5f, yPos);
+                    newObject.GetComponent<Rigidbody>().velocity = new Vector3(xSpeed, 0, ySpeed);
+                    otherPlayers.Add(id, newObject);
+                    LatestUpdate.Add(id, packetNumber);
+                    Destroy(newObject.GetComponent<PlayerController>());
+                }
+                else if (LatestUpdate[id] < packetNumber)
+                {
+                    otherPlayers[id].transform.position = new Vector3(xPos, .5f, yPos);
+                    otherPlayers[id].GetComponent<Rigidbody>().velocity = new Vector3(xSpeed, 0, ySpeed);
+                    LatestUpdate[id] = packetNumber;
+                }
+            }
+        }
+    }
+
 }
 
 

@@ -24,15 +24,14 @@ while True:
            print player[5]
            players[player[4]] = player
        else:
-           sock.sendto('',(UDP_IP, UDP_PORT))
+           sock.sendto('',addr)
            continue
        output = array('c')
        for _, value in players.items():
            for char in pack('ffffIIBB',value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7]):
                output.append(char)
-           for char in pack('ffffIIBB',-value[0],-value[1],value[2],value[3],value[4],value[5],value[6],value[7]):
+           for char in pack('ffffIIBB',-value[0],-value[1],value[2],value[3],1,value[5],value[6],value[7]):
                output.append(char)
-
-       sock.sendto(output,(UDP_IP, UDP_PORT))
+       sock.sendto(output,addr)
        
        
