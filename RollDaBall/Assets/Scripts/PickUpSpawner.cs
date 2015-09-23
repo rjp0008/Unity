@@ -1,29 +1,29 @@
-﻿using System;
-using System.Net;
-using System.Net.Sockets;
+﻿using Assets.Scripts;
+using System;
 using UnityEngine;
 
-public class PickUpSpawner : MonoBehaviour {
+public class PickUpSpawner : MonoBehaviour
+{
 
-	private float deltaTime;
-	private Rigidbody rb;
+    private float deltaTime;
+    private Rigidbody rb;
 
-	public GameObject player;
+    public GameObject player;
     public GameObject objectToSpawn;
 
-	void Start () {
-		rb = GetComponent<Rigidbody>();
-	}
-	
-	// Update is called once per frame
-	void Update () {
-        deltaTime += Time.deltaTime;
-        if (deltaTime > 1)
-        {
-            UdpClient client = new UdpClient();
-            IPEndPoint ep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 2000); // endpoint where server is listening (testing localy)
-            client.Connect(ep);
+    UDPConnection udp = new UDPConnection();
 
+    void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        deltaTime += Time.deltaTime;
+        if (false)
+        {
             var test = BitConverter.GetBytes(player.transform.position.x);
             var test2 = BitConverter.GetBytes(player.transform.position.z);
 
@@ -34,8 +34,7 @@ public class PickUpSpawner : MonoBehaviour {
                 ba[i + sizeof(float)] = test2[i];
             }
 
-            client.Send(ba, ba.Length);
-            ba = client.Receive(ref ep);
+            ba = udp.SendBytes(ba);
 
             transform.position = new Vector3(-BitConverter.ToSingle(ba, 0), .5f, -BitConverter.ToSingle(ba, 4));
 
@@ -48,8 +47,8 @@ public class PickUpSpawner : MonoBehaviour {
         }
     }
 
-	void FixedUpdate()
-	{
-		
-	}
+    void FixedUpdate()
+    {
+
+    }
 }
