@@ -125,7 +125,7 @@ public class PlayerController : MonoBehaviour
 
     private void MakePlayersFromBytes(byte[] data)
     {
-        for (int x = 0; x < data.Length / 26; x += 26)
+        for (int x = 0; x < data.Length; x += 26)
         {
             var xPos = BitConverter.ToSingle(data, x + 0);
             var yPos = BitConverter.ToSingle(data, x + 4);
