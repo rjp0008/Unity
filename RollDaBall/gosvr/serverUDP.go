@@ -14,22 +14,20 @@ func main() {
 	i := 0
 	for {
 		i++
-		buf := make([]byte, 1024)
-		rlen, source, err := sock.ReadFromUDP(buf)
+		buf := new(bytes.Buffer)
+		p := player{}
+		rlen, source, err := sock.ReadFrom(buf)
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Println(string(buf[0:rlen]))
-		var xpos float32
-		var ypos float32
-		reader := bytes.NewReader(buf[:4])
-		binary.Read(reader, binary.LittleEndian, &xpos)
-		reader = bytes.NewReader(buf[4:rlen])
-		binary.Read(reader, binary.LittleEndian, &ypos)
-		var bin_buf bytes.Buffer
-		binary.Write(&bin_buf, binary.LittleEndian, -xpos)
-		binary.Write(&bin_buf, binary.LittleEndian, -ypos)
+		binary.Write(p,binary.BigEndian,buf[:rlen])
 		sock.WriteToUDP(buf[0:rlen], source)
 		//go handlePacket(buf, rlen)
 	}
+}
+
+type player struct {
+	xPos, yPos, xSpeed, ySpeed float32
+	id, packet                 int32
+	version, checksum          byte
 }

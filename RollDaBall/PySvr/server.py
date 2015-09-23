@@ -1,4 +1,4 @@
-import socket
+﻿import socket
 
 
 TCP_IP = '127.0.0.1'
