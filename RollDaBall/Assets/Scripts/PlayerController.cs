@@ -3,6 +3,8 @@ using UnityEngine.UI;
 using System.Collections;
 using System;
 using Assets.Scripts;
+using System.Net.Sockets;
+using System.Net;
 
 public class PlayerController : MonoBehaviour
 {
@@ -19,7 +21,9 @@ public class PlayerController : MonoBehaviour
     private int packetNumber = 0;
 
 
-    UDPConnection udp = new UDPConnection();
+    UdpClient client = new UdpClient();
+    IPEndPoint ep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 2000); // endpoint where server is listening (testing localy)
+
 
     void Start()
     {
@@ -28,27 +32,32 @@ public class PlayerController : MonoBehaviour
         UpdateScore();
         winText.text = "";
         id = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+
+        client.Connect(ep);
     }
 
     void FixedUpdate()
     {
         deltaTime += Time.deltaTime;
-        if (deltaTime > .1)
+        if (deltaTime > 1)
         {
-            var ba = udp.SendBytes(DataToBytes());
+            var data = DataToBytes();
+            client.Send(data, data.Length);
+            data = client.Receive(ref ep);
+            deltaTime = 0;
         }
         var horizontal = Input.GetAxis("Horizontal");
         var vertical = Input.GetAxis("Vertical");
 
 
-        var movement = new Vector3(horizontal, 0,  vertical);
-        
-        rb.AddForce(movement*speed);
+        var movement = new Vector3(horizontal, 0, vertical);
+
+        rb.AddForce(movement * speed);
     }
 
     void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.CompareTag("PickUp"))
+        if (other.gameObject.CompareTag("PickUp"))
         {
             other.gameObject.SetActive(false);
             score++;
@@ -59,7 +68,7 @@ public class PlayerController : MonoBehaviour
     private void UpdateScore()
     {
         countText.text = "Count: " + score.ToString();
-        if(score >= 12)
+        if (score >= 12)
         {
             //winText.text = "YOU'VE WON!1";
         }
@@ -67,7 +76,7 @@ public class PlayerController : MonoBehaviour
 
     public byte[] DataToBytes()
     {
-        var output = new byte[28];
+        var output = new byte[26];
 
         var xPosBytes = BitConverter.GetBytes(rb.transform.position.x);
         var yPosBytes = BitConverter.GetBytes(rb.transform.position.z);
@@ -82,14 +91,14 @@ public class PlayerController : MonoBehaviour
         for (int i = 0; i < 4; i++)
         {
             output[i] = xPosBytes[i];
-            output[i+4] = yPosBytes[i];
-            output[i+8] = xSpeedBytes[i];
-            output[i+12] = ySpeedBytes[i];
+            output[i + 4] = yPosBytes[i];
+            output[i + 8] = xSpeedBytes[i];
+            output[i + 12] = ySpeedBytes[i];
             output[i + 16] = idBytes[i];
             output[i + 20] = packetNumberBytes[i];
         }
 
-        output[26] = 0x1;
+        output[24] = 0x1;
 
         byte sum = 0;
         foreach (byte aByte in output)
@@ -97,7 +106,7 @@ public class PlayerController : MonoBehaviour
             sum += aByte;
         }
 
-        output[27] = ((byte)~sum);
+        output[25] = ((byte)~sum);
 
         return output;
     }
