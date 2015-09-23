@@ -34,7 +34,7 @@ public class PickUpSpawner : MonoBehaviour
                 ba[i + sizeof(float)] = test2[i];
             }
 
-            //ba = udp.SendBytes(ba);
+            ba = udp.SendBytes(ba);
 
             transform.position = new Vector3(-BitConverter.ToSingle(ba, 0), .5f, -BitConverter.ToSingle(ba, 4));
 
