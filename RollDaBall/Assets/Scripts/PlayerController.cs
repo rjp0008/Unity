@@ -6,6 +6,7 @@ using Assets.Scripts;
 using System.Net.Sockets;
 using System.Net;
 using System.Collections.Generic;
+using System.Threading;
 
 public class PlayerController : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class PlayerController : MonoBehaviour
 
     private Rigidbody rb;
     private int score;
+    private SphereCollider coll;
 
 
 
@@ -25,9 +27,10 @@ public class PlayerController : MonoBehaviour
 
     Dictionary<int, GameObject> otherPlayers;
     Dictionary<int, int> LatestUpdate;
+    Dictionary<int, int> shouldDeleteOld = new Dictionary<int, int>();
 
     UdpClient client = new UdpClient();
-    IPEndPoint ep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 2000); // endpoint where server is listening (testing localy)
+    IPEndPoint ep = new IPEndPoint(IPAddress.Parse("104.131.48.33"), 2000); 
 
 
     void Start()
@@ -36,6 +39,7 @@ public class PlayerController : MonoBehaviour
         LatestUpdate = new Dictionary<int, int>();
 
         rb = GetComponent<Rigidbody>();
+        coll = GetComponent<SphereCollider>();
         score = 0;
         UpdateScore();
         winText.text = "";
@@ -44,20 +48,38 @@ public class PlayerController : MonoBehaviour
         client.Connect(ep);
     }
 
+    void CheckOutOfBounds()
+    {
+        if (rb.position.y < -10)
+        {
+            rb.mass = 1;
+            rb.position = new Vector3(0, 100, 0);
+            score = 0;
+            rb.velocity = new Vector3(0, 0, 0);
+            rb.transform.localScale = new Vector3(1, 1, 1);
+        }
+    }
+
+    void Update()
+    { 
+        RemoveStalePlayers();
+    }
+
     void FixedUpdate()
     {
         deltaTime += Time.deltaTime;
-        if (deltaTime > 1)
+        if (deltaTime > .075)
         {
             var data = DataToBytes();
             client.Send(data, data.Length);
-            data = client.Receive(ref ep);
-            if (data.Length > 0)
-            {
-                MakePlayersFromBytes(data);
-            }
+            MakePlayersFromBytes(client.Receive(ref ep));
             deltaTime = 0;
         }
+        var networking = new Thread(new ThreadStart(Networking));
+        networking.Start();
+        CheckOutOfBounds();
+
+
         var horizontal = Input.GetAxis("Horizontal");
         var vertical = Input.GetAxis("Vertical");
 
@@ -65,6 +87,12 @@ public class PlayerController : MonoBehaviour
         var movement = new Vector3(horizontal, 0, vertical);
 
         rb.AddForce(movement * speed);
+        networking.Join();
+    }
+
+    private void Networking()
+    {
+       
     }
 
     void OnTriggerEnter(Collider other)
@@ -73,6 +101,9 @@ public class PlayerController : MonoBehaviour
         {
             other.gameObject.SetActive(false);
             score++;
+            speed += score * .01f;
+            //rb.transform.localScale = new Vector3((.1f * score + 1), .1f * score + 1f, .1f * score + 1);
+            ////.radius = rb.transform.localScale.x / 2;
             UpdateScore();
         }
     }
@@ -123,9 +154,37 @@ public class PlayerController : MonoBehaviour
         return output;
     }
 
+    private void RemoveStalePlayers()
+    {
+        int itemToRemove = 0;
+        bool shouldRemove = false;
+        try
+        {
+            foreach (var itemTracker in shouldDeleteOld.Keys)
+            {
+                shouldDeleteOld[itemTracker] -= 1;
+                if (shouldDeleteOld[itemTracker] < 0)
+                {
+                    Destroy(otherPlayers[itemTracker]);
+                    otherPlayers.Remove(itemTracker);
+                    itemToRemove = itemTracker;
+                    shouldRemove = true;
+                    LatestUpdate.Remove(itemTracker);
+                }
+            }
+            if (shouldRemove)
+            {
+                shouldDeleteOld.Remove(itemToRemove);
+            }
+        }
+        catch { }
+    }
+
     private void MakePlayersFromBytes(byte[] data)
     {
-        for (int x = 0; x < data.Length / 26; x += 26)
+
+
+        for (int x = 0; x < data.Length; x += 26)
         {
             var xPos = BitConverter.ToSingle(data, x + 0);
             var yPos = BitConverter.ToSingle(data, x + 4);
@@ -146,13 +205,14 @@ public class PlayerController : MonoBehaviour
                     newObject.GetComponent<Rigidbody>().velocity = new Vector3(xSpeed, 0, ySpeed);
                     otherPlayers.Add(id, newObject);
                     LatestUpdate.Add(id, packetNumber);
-                    Destroy(newObject.GetComponent<PlayerController>());
+                    shouldDeleteOld.Add(id, 100);
                 }
                 else if (LatestUpdate[id] < packetNumber)
                 {
+                    LatestUpdate[id] = packetNumber;
+                    shouldDeleteOld[id] = 100;
                     otherPlayers[id].transform.position = new Vector3(xPos, .5f, yPos);
                     otherPlayers[id].GetComponent<Rigidbody>().velocity = new Vector3(xSpeed, 0, ySpeed);
-                    LatestUpdate[id] = packetNumber;
                 }
             }
         }

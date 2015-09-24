@@ -7,6 +7,7 @@ public class PickUpSpawner : MonoBehaviour
 
     private float deltaTime;
     private Rigidbody rb;
+    private float timeToSpawnNext = 0;
 
     public GameObject player;
     public GameObject objectToSpawn;
@@ -22,24 +23,14 @@ public class PickUpSpawner : MonoBehaviour
     void Update()
     {
         deltaTime += Time.deltaTime;
-        if (false)
+
+        if (deltaTime > timeToSpawnNext) 
         {
-            var test = BitConverter.GetBytes(player.transform.position.x);
-            var test2 = BitConverter.GetBytes(player.transform.position.z);
-
-            var ba = new byte[sizeof(float) * 2];
-            for (int i = 0; i < sizeof(float); i++)
-            {
-                ba[i] = test[i];
-                ba[i + sizeof(float)] = test2[i];
-            }
-
-            //ba = udp.SendBytes(ba);
-
-            transform.position = new Vector3(-BitConverter.ToSingle(ba, 0), .5f, -BitConverter.ToSingle(ba, 4));
+            timeToSpawnNext = UnityEngine.Random.Range(.5f, 3f);
+            transform.position = new Vector3(-player.transform.position.x, 2f, -player.transform.position.z);
 
             var newObject = Instantiate(objectToSpawn);
-            newObject.transform.position = transform.position;
+            newObject.GetComponent<Transform>().position = new Vector3(transform.position.x,.5f, transform.position.z);
             newObject.SetActive(true);
 
 
