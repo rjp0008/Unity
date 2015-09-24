@@ -26,7 +26,6 @@ while True:
            updateTracker[player[4]] = 100
            for key, value in updateTracker.items():
                 updateTracker[key] = updateTracker[key] -1
-                print updateTracker[key]
                 if --updateTracker[key] < 0:
                     updateTracker.pop(key)
                     players.pop(key)
@@ -37,7 +36,7 @@ while True:
        for _, value in players.items():
            for char in pack('ffffIIBB',value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7]):
                output.append(char)
-       print len(output)
        sock.sendto(output,addr)
+       print len(output)
        
        

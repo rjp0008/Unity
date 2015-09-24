@@ -65,7 +65,6 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         RemoveStalePlayers();
-
         CheckOutOfBounds();
     }
 
@@ -73,9 +72,9 @@ public class PlayerController : MonoBehaviour
     {
         deltaTime += Time.deltaTime;
         var data = DataToBytes();
-        client.Send(data, data.Length);
         if (deltaTime > .25)
         {
+        client.Send(data, data.Length);
             MakePlayersFromBytes(client.Receive(ref ep));
             deltaTime = 0;
         }
@@ -97,7 +96,7 @@ public class PlayerController : MonoBehaviour
         {
             other.gameObject.SetActive(false);
             score++;
-            speed += score * .01f;
+           // speed += score * .01f;
             //rb.transform.localScale = new Vector3((.1f * score + 1), .1f * score + 1f, .1f * score + 1);
             ////.radius = rb.transform.localScale.x / 2;
             UpdateScore();
@@ -205,9 +204,10 @@ public class PlayerController : MonoBehaviour
                 if (!otherPlayers.ContainsKey(id))
                 {
                     var newObject = Instantiate(anotherPlayer);
-                    var test = new Interpolator(thisData);
+                    newObject.SetActive(true);
+                    var newInterpolator = new Interpolator(thisData);
                     otherPlayers[id] = newObject;
-                    interpolators[id] = test;
+                    interpolators[id] = newInterpolator;
                     LatestUpdate[id] = packetNumber;
                     shouldDeleteOld[id] = 100;
                 }
@@ -216,6 +216,7 @@ public class PlayerController : MonoBehaviour
                     LatestUpdate[id] = packetNumber;
                     shouldDeleteOld[id] = 100;
                     interpolators[id].CalculateNewInterpolation(thisData);
+                    otherPlayers[id].GetComponent<Rigidbody>().position = interpolators[id].PositionAfterTime(0);
                 }
             }
         }
