@@ -28,14 +28,16 @@ public class PlayerController : MonoBehaviour
     Dictionary<int, GameObject> otherPlayers;
     Dictionary<int, int> LatestUpdate;
     Dictionary<int, int> shouldDeleteOld = new Dictionary<int, int>();
+    Dictionary<int, Interpolator> interpolators;
 
     UdpClient client = new UdpClient();
-    IPEndPoint ep = new IPEndPoint(IPAddress.Parse("104.131.48.33"), 2000); 
+    IPEndPoint ep = new IPEndPoint(IPAddress.Parse("104.131.48.33"), 2000);
 
 
     void Start()
     {
         otherPlayers = new Dictionary<int, GameObject>();
+        interpolators = new Dictionary<int, Interpolator>();
         LatestUpdate = new Dictionary<int, int>();
 
         rb = GetComponent<Rigidbody>();
@@ -61,24 +63,24 @@ public class PlayerController : MonoBehaviour
     }
 
     void Update()
-    { 
+    {
         RemoveStalePlayers();
+
+        CheckOutOfBounds();
     }
 
     void FixedUpdate()
     {
         deltaTime += Time.deltaTime;
-        if (deltaTime > .075)
+        var data = DataToBytes();
+        client.Send(data, data.Length);
+        if (deltaTime > .25)
         {
-            var data = DataToBytes();
-            client.Send(data, data.Length);
             MakePlayersFromBytes(client.Receive(ref ep));
             deltaTime = 0;
         }
-        var networking = new Thread(new ThreadStart(Networking));
-        networking.Start();
-        CheckOutOfBounds();
 
+        UpdatePlayerLocations();
 
         var horizontal = Input.GetAxis("Horizontal");
         var vertical = Input.GetAxis("Vertical");
@@ -87,12 +89,6 @@ public class PlayerController : MonoBehaviour
         var movement = new Vector3(horizontal, 0, vertical);
 
         rb.AddForce(movement * speed);
-        networking.Join();
-    }
-
-    private void Networking()
-    {
-       
     }
 
     void OnTriggerEnter(Collider other)
@@ -180,18 +176,26 @@ public class PlayerController : MonoBehaviour
         catch { }
     }
 
+    private void UpdatePlayerLocations()
+    {
+        foreach(var item in otherPlayers.Keys)
+        {
+            otherPlayers[item].GetComponent<Rigidbody>().position = interpolators[item].PositionAfterTime(deltaTime);
+        }
+    }
+
+
     private void MakePlayersFromBytes(byte[] data)
     {
-
-
         for (int x = 0; x < data.Length; x += 26)
         {
-            var xPos = BitConverter.ToSingle(data, x + 0);
-            var yPos = BitConverter.ToSingle(data, x + 4);
+            var xPosition = BitConverter.ToSingle(data, x + 0);
+            var yPosition = BitConverter.ToSingle(data, x + 4);
 
             var xSpeed = BitConverter.ToSingle(data, x + 8);
             var ySpeed = BitConverter.ToSingle(data, x + 12);
 
+            PositionBehavior thisData = new PositionBehavior(xPosition, yPosition, xSpeed, ySpeed);
 
             var id = BitConverter.ToInt32(data, x + 16);
             var packetNumber = BitConverter.ToInt32(data, x + 20);
@@ -201,18 +205,17 @@ public class PlayerController : MonoBehaviour
                 if (!otherPlayers.ContainsKey(id))
                 {
                     var newObject = Instantiate(anotherPlayer);
-                    newObject.transform.position = new Vector3(xPos, .5f, yPos);
-                    newObject.GetComponent<Rigidbody>().velocity = new Vector3(xSpeed, 0, ySpeed);
-                    otherPlayers.Add(id, newObject);
-                    LatestUpdate.Add(id, packetNumber);
-                    shouldDeleteOld.Add(id, 100);
+                    var test = new Interpolator(thisData);
+                    otherPlayers[id] = newObject;
+                    interpolators[id] = test;
+                    LatestUpdate[id] = packetNumber;
+                    shouldDeleteOld[id] = 100;
                 }
                 else if (LatestUpdate[id] < packetNumber)
                 {
                     LatestUpdate[id] = packetNumber;
                     shouldDeleteOld[id] = 100;
-                    otherPlayers[id].transform.position = new Vector3(xPos, .5f, yPos);
-                    otherPlayers[id].GetComponent<Rigidbody>().velocity = new Vector3(xSpeed, 0, ySpeed);
+                    interpolators[id].CalculateNewInterpolation(thisData);
                 }
             }
         }
