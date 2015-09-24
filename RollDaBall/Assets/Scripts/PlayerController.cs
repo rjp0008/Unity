@@ -72,9 +72,9 @@ public class PlayerController : MonoBehaviour
     {
         deltaTime += Time.deltaTime;
         var data = DataToBytes();
-        if (deltaTime > .25)
+        if (deltaTime > .1)
         {
-        client.Send(data, data.Length);
+            client.Send(data, data.Length);
             MakePlayersFromBytes(client.Receive(ref ep));
             deltaTime = 0;
         }
@@ -96,7 +96,7 @@ public class PlayerController : MonoBehaviour
         {
             other.gameObject.SetActive(false);
             score++;
-           // speed += score * .01f;
+            // speed += score * .01f;
             //rb.transform.localScale = new Vector3((.1f * score + 1), .1f * score + 1f, .1f * score + 1);
             ////.radius = rb.transform.localScale.x / 2;
             UpdateScore();
@@ -149,6 +149,7 @@ public class PlayerController : MonoBehaviour
         return output;
     }
 
+    //won't remove multiple
     private void RemoveStalePlayers()
     {
         int itemToRemove = 0;
@@ -177,7 +178,7 @@ public class PlayerController : MonoBehaviour
 
     private void UpdatePlayerLocations()
     {
-        foreach(var item in otherPlayers.Keys)
+        foreach (var item in otherPlayers.Keys)
         {
             otherPlayers[item].GetComponent<Rigidbody>().position = interpolators[item].PositionAfterTime(deltaTime);
         }

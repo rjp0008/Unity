@@ -24,7 +24,7 @@ namespace Assets.Scripts
         public PositionBehavior newData;
         public PositionBehavior lastData;
 
-        public float interpolationTime = .25f;
+        public float interpolationTime = .1f;
 
         public Interpolator(PositionBehavior data)
         {
