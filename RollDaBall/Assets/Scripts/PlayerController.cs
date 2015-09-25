@@ -7,6 +7,8 @@ using System.Net.Sockets;
 using System.Net;
 using System.Collections.Generic;
 using System.Threading;
+using System.Diagnostics;
+using System.IO;
 
 public class PlayerController : MonoBehaviour
 {
@@ -20,7 +22,9 @@ public class PlayerController : MonoBehaviour
     private int score;
     private SphereCollider coll;
 
-
+    private Stopwatch sw = new Stopwatch();
+    private long[] times = new long[100];
+    private int time = 0;
 
     private int id;
     private int packetNumber = 0;
@@ -74,8 +78,28 @@ public class PlayerController : MonoBehaviour
         var data = DataToBytes();
         if (deltaTime > .1)
         {
+            sw.Reset();
+            sw.Start();
             client.Send(data, data.Length);
-            MakePlayersFromBytes(client.Receive(ref ep));
+            var receive = (client.Receive(ref ep));
+            sw.Stop();
+            if(time < 100)
+            {
+                times[time] = sw.ElapsedMilliseconds;
+                time++;
+            }
+            else if( time == 100)
+            {
+                using(StreamWriter test = new StreamWriter(@"C:\Users\Robert\Documents\Unity\RollDaBall\PySvr\serverlogs.dat"))
+                {
+                    foreach(var aTime in times)
+                    {
+                        test.WriteLine(aTime);
+                    }
+                }
+                time++;
+            }
+            MakePlayersFromBytes(receive);
             deltaTime = 0;
         }
 
