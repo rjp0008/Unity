@@ -28,6 +28,8 @@ public class PlayerController : MonoBehaviour
 
     private int id;
     private int packetNumber = 0;
+    
+     
 
     Dictionary<int, GameObject> otherPlayers;
     Dictionary<int, int> LatestUpdate;
@@ -78,27 +80,10 @@ public class PlayerController : MonoBehaviour
         var data = DataToBytes();
         if (deltaTime > .1)
         {
-            sw.Reset();
-            sw.Start();
+            //LogPerformanceStart();
             client.Send(data, data.Length);
             var receive = (client.Receive(ref ep));
-            sw.Stop();
-            if(time < 100)
-            {
-                times[time] = sw.ElapsedMilliseconds;
-                time++;
-            }
-            else if( time == 100)
-            {
-                using(StreamWriter test = new StreamWriter(@"C:\Users\Robert\Documents\Unity\RollDaBall\PySvr\serverlogs.dat"))
-                {
-                    foreach(var aTime in times)
-                    {
-                        test.WriteLine(aTime);
-                    }
-                }
-                time++;
-            }
+            //LogPerformanceEnd();
             MakePlayersFromBytes(receive);
             deltaTime = 0;
         }
@@ -112,6 +97,33 @@ public class PlayerController : MonoBehaviour
         var movement = new Vector3(horizontal, 0, vertical);
 
         rb.AddForce(movement * speed);
+    }
+
+    private void LogPerformanceStart()
+    {
+        sw.Reset();
+        sw.Start();
+    }
+
+    private void LogPerformanceEnd()
+    {
+        sw.Stop();
+        if (time < 100)
+        {
+            times[time] = sw.ElapsedMilliseconds;
+            time++;
+        }
+        else if (time == 100)
+        {
+            using (StreamWriter test = new StreamWriter(@"C:\Users\Robert\Documents\Unity\RollDaBall\PySvr\serverlogs.dat"))
+            {
+                foreach (var aTime in times)
+                {
+                    test.WriteLine(aTime);
+                }
+            }
+            time++;
+        }
     }
 
     void OnTriggerEnter(Collider other)
