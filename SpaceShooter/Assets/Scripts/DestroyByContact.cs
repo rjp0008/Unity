@@ -13,8 +13,16 @@ public class DestroyByContact : MonoBehaviour
     public void Start()
     {
         var gameObject = GameObject.FindGameObjectWithTag("GameController");
-        gController = gameObject.GetComponent<GameController>();
+        if (gameObject != null)
+        {
+            gController = gameObject.GetComponent<GameController>();
+        }
+        else
+        {
+            Debug.Log("Could not find gamecontroller script.");
+        }
     }
+
 
     public void OnTriggerEnter(Collider other)
     {
@@ -29,6 +37,7 @@ public class DestroyByContact : MonoBehaviour
         //if object is player do something special
         if (other.tag == "Player")
         {
+            gController.EndGame();
             var otherRb = other.gameObject.GetComponent<Rigidbody>();
             Instantiate(PlayerExplosion, otherRb.position, otherRb.rotation);
         }
