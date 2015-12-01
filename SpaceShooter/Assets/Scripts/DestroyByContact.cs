@@ -27,7 +27,7 @@ public class DestroyByContact : MonoBehaviour
     public void OnTriggerEnter(Collider other)
     {
         //Don't destroy boundary
-        if (other.tag == "Boundary") return;
+        if (other.tag == "Boundary" || other.tag == "Enemy") return;
 
         //Destroy both these objects
         Destroy(other.gameObject);
@@ -42,9 +42,11 @@ public class DestroyByContact : MonoBehaviour
             Instantiate(PlayerExplosion, otherRb.position, otherRb.rotation);
         }
 
-
-        //Make the explosion
-        Instantiate(Explosion, rb.position, rb.rotation);
+        if (Explosion != null)
+        {
+            //Make the explosion
+            Instantiate(Explosion, rb.position, rb.rotation);
+        }
 
         gController.AddScore(scoreValue);
     }
