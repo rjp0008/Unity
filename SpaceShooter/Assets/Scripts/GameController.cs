@@ -6,7 +6,7 @@ using Random = UnityEngine.Random;
 public class GameController : MonoBehaviour
 {
 
-    public GameObject Hazard;
+    public GameObject[] Hazards;
     public GameObject Player;
     public int HazardCount;
 
@@ -59,7 +59,7 @@ public class GameController : MonoBehaviour
             {
                 var vec = new Vector3(Random.Range(-SpawnValues.x, SpawnValues.x), SpawnValues.y, SpawnValues.z);
                 var quat = Quaternion.identity;
-                Instantiate(Hazard, vec, quat);
+                Instantiate(Hazards[Random.Range(0,Hazards.Length)], vec, quat);
                 yield return new WaitForSeconds(SpawnWait);
             }
             yield return new WaitForSeconds(WaveWait);
