@@ -63,3 +63,5 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 /Survival2/Assets/_CompletedAssets
+Survival2/.vs/Survival2/v14/.suo
+*.suo
