@@ -10,16 +10,16 @@ public class EnemyAttack : MonoBehaviour
     Animator anim;
     GameObject player;
     PlayerHealth playerHealth;
-    //EnemyHealth enemyHealth;
+    EnemyHealth enemyHealth;
     bool playerInRange;
     float timer;
 
 
     void Awake ()
     {
-        player = GameObject.FindGameObjectWithTag ("Player");
+        player = GameObject.FindGameObjectsWithTag ("Player")[1];
         playerHealth = player.GetComponent <PlayerHealth> ();
-        //enemyHealth = GetComponent<EnemyHealth>();
+        enemyHealth = GetComponent<EnemyHealth>();
         anim = GetComponent <Animator> ();
     }
 
@@ -46,7 +46,7 @@ public class EnemyAttack : MonoBehaviour
     {
         timer += Time.deltaTime;
 
-        if(timer >= timeBetweenAttacks && playerInRange/* && enemyHealth.currentHealth > 0*/)
+        if(timer >= timeBetweenAttacks && playerInRange && enemyHealth.currentHealth > 0)
         {
             Attack ();
         }
