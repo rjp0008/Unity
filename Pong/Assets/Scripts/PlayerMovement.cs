@@ -5,10 +5,10 @@ public class PlayerMovement : MonoBehaviour
 {
 
     public float MovementSpeed = 6f;
+    public int playerNumber = 1;
 
     private Rigidbody _rigidbody;
     private string movementAxis;
-    private int playerNumber = 1;
 
 	// Use this for initialization
 	void Start ()
