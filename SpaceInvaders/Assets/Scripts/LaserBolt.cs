@@ -21,7 +21,7 @@ public class LaserBolt : MonoBehaviour
     {
         if (Mathf.Abs(rb.position.y) > 15)
         {
-            Destroy(this);
+            Destroy(gameObject);
         }
         else
         {
