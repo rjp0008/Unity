@@ -8,11 +8,32 @@ using System.Security.Cryptography.X509Certificates;
 public class EnemyController : MonoBehaviour
 {
     public GameObject enemy;
-    internal List<Transform> enemyTransforms = new List<Transform>();
+    private List<Transform> enemyTransforms = new List<Transform>();
 
 
-    private float secondsBeforeMovement = 1;
+    private float secondsBeforeMovement = 1f;
     private float secondsSinceMovement = 0;
+
+    private Vector3 currentHeading = Vector3.right;
+
+    internal List<Transform> EnemyTransforms
+    {
+        get
+        {
+            var temp = new List<Transform>();
+            foreach (var enemyTransform in enemyTransforms)
+            {
+                if (enemyTransform != null)
+                {
+                    temp.Add(enemyTransform);
+                }
+            }
+            enemyTransforms = temp;
+            return enemyTransforms;
+        }
+        set { enemyTransforms = value; }
+    }
+
     // Use this for initialization
     void Start()
     {
@@ -28,30 +49,62 @@ public class EnemyController : MonoBehaviour
     void FixedUpdate()
     {
         secondsSinceMovement += Time.deltaTime;
-        if (secondsSinceMovement > secondsBeforeMovement)
+
+        if (!(secondsSinceMovement > secondsBeforeMovement)) return;
+
+        secondsSinceMovement = 0;
+
+        if (FurthestRightLocation() > 5f || FurthestLeftLocation() < -5f)
         {
-            secondsSinceMovement = 0;
-            foreach (var enemyLocation in enemyTransforms.ToList())
+            DropDown();
+        }
+        else
+        {
+            foreach (var enemyLocation in enemyTransforms.ToList().Where(enemyLocation => enemyLocation != null))
             {
-                if (enemyLocation != null)
-                {
-                    enemyLocation.position += Vector3.right / 4;
-                }
+                enemyLocation.position += currentHeading / 4;
             }
-            enemyTransforms.RemoveAll(null);
         }
     }
 
     void NewWave()
     {
-        for (int x = -5; x < 5; x += 2)
+        for (var x = -5; x < 5; x += 2)
         {
-            for (int y = 10; y > 7; y--)
+            for (var y = 10; y > 7; y--)
             {
                 var enemyInstance = (GameObject)Instantiate(enemy, new Vector3(x, y, 0), new Quaternion(0, 0, 0, 0));
                 enemyTransforms.Add(enemyInstance.transform);
                 enemyInstance.transform.Rotate(Vector3.forward, 90);
             }
         }
+    }
+
+    void DropDown()
+    {
+        foreach (var enemyLocation in enemyTransforms.ToList())
+        {
+            if (enemyLocation != null)
+            {
+                enemyLocation.position += Vector3.down / 4;
+            }
+        }
+
+        currentHeading = currentHeading == Vector3.right ? Vector3.left : Vector3.right;
+    }
+
+    private float FurthestRightLocation()
+    {
+        return AllXPositions().Max();
+    }
+
+    private float FurthestLeftLocation()
+    {
+        return AllXPositions().Min();
+    }
+
+    private IEnumerable<float> AllXPositions()
+    {
+        return enemyTransforms.Where(x => x != null).Select(enemyTransform => enemyTransform.position.x);
     }
 }

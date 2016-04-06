@@ -4,13 +4,13 @@ using System.Collections;
 public class EnemyPilot : MonoBehaviour
 {
     private GameObject enemyAI;
-    private int id;
+    private string id;
     private static int nextId = 0;
     // Use this for initialization
     void Start()
     {
         enemyAI = GameObject.FindGameObjectWithTag("GameController");
-        id = ++nextId;
+        id = nextId++.ToString();
     }
 
     // Update is called once per frame
@@ -19,16 +19,17 @@ public class EnemyPilot : MonoBehaviour
 
     }
 
-    public int FighterID
+    public string FighterID
     {
         get { return id; }
+        set { id = value; }
     }
 
     public void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Bullet")
         {
-            enemyAI.GetComponent<EnemyController>().enemyTransforms.Remove(other.gameObject.transform);
+            enemyAI.GetComponent<EnemyController>().EnemyTransforms.Remove(other.gameObject.transform);
             Destroy(other.gameObject);
             Destroy(gameObject);
         }
