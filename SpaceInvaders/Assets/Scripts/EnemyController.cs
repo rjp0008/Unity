@@ -5,7 +5,7 @@ using System.Linq;
 
 public class EnemyController : MonoBehaviour
 {
-
+    public GameObject enemy;
     private List<Transform> enemyTransforms = new List<Transform>();
 
     private float secondsBeforeMovement = 1;
