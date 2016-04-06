@@ -46,7 +46,7 @@ public class PlayerController : MonoBehaviour
     private void Move()
     {
         float input = Input.GetAxis("Horizontal");
-        rb.transform.position = rb.transform.position + new Vector3(-1 * input * Time.deltaTime * speed, 0, 0);
+        rb.transform.position = rb.transform.position + new Vector3( input * Time.deltaTime * speed, 0, 0);
     }
     
 }
