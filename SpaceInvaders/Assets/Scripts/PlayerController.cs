@@ -11,16 +11,16 @@ public class PlayerController : MonoBehaviour
 
     private float timeBetweenShots = 1f;
     private float timeSinceLastShot;
-	// Use this for initialization
-	void Start ()
-	{
-	    rb = GetComponent<Rigidbody>();
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    // Use this for initialization
+    void Start ()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+    // Update is called once per frame
+    void Update () {
+    
+    }
 
     void FixedUpdate()
     {
