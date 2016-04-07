@@ -8,6 +8,8 @@ using System.Security.Cryptography.X509Certificates;
 public class EnemyController : MonoBehaviour
 {
     public GameObject enemy;
+    public GameObject barrier;
+
     private List<Transform> enemyTransforms = new List<Transform>();
 
 
@@ -38,6 +40,7 @@ public class EnemyController : MonoBehaviour
     void Start()
     {
         NewWave();
+        SpawnBarriers();
     }
 
     // Update is called once per frame
@@ -58,13 +61,12 @@ public class EnemyController : MonoBehaviour
         {
             DropDown();
         }
-        else
+
+        foreach (var enemyLocation in enemyTransforms.ToList().Where(enemyLocation => enemyLocation != null))
         {
-            foreach (var enemyLocation in enemyTransforms.ToList().Where(enemyLocation => enemyLocation != null))
-            {
-                enemyLocation.position += currentHeading / 4;
-            }
+            enemyLocation.position += currentHeading / 4;
         }
+
     }
 
     void NewWave()
@@ -106,5 +108,13 @@ public class EnemyController : MonoBehaviour
     private IEnumerable<float> AllXPositions()
     {
         return enemyTransforms.Where(x => x != null).Select(enemyTransform => enemyTransform.position.x);
+    }
+
+    private void SpawnBarriers()
+    {
+        for (float x = -4; x <= 4; x+=2.5f)
+        {
+            Instantiate(barrier, new Vector3(x, 1f, 0f), new Quaternion(0, 0, 0, 0));
+        }
     }
 }
