@@ -4,11 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using Random = System.Random;
 
 public class EnemyController : MonoBehaviour
 {
     public GameObject enemy;
     public GameObject barrier;
+    public GameObject enemyShot;
 
     private List<Transform> enemyTransforms = new List<Transform>();
 
@@ -22,16 +24,7 @@ public class EnemyController : MonoBehaviour
     {
         get
         {
-            var temp = new List<Transform>();
-            foreach (var enemyTransform in enemyTransforms)
-            {
-                if (enemyTransform != null)
-                {
-                    temp.Add(enemyTransform);
-                }
-            }
-            enemyTransforms = temp;
-            return enemyTransforms;
+            return enemyTransforms.Where(x => x != null).ToList();
         }
         set { enemyTransforms = value; }
     }
@@ -62,15 +55,17 @@ public class EnemyController : MonoBehaviour
             DropDown();
         }
 
-        foreach (var enemyLocation in enemyTransforms.ToList().Where(enemyLocation => enemyLocation != null))
+        foreach (var enemyLocation in EnemyTransforms.Where(enemyLocation => enemyLocation != null))
         {
             enemyLocation.position += currentHeading / 4;
         }
+        ShootAtPlayer();
 
     }
 
     void NewWave()
     {
+        enemyTransforms = new List<Transform>();
         for (var x = -5; x < 5; x += 2)
         {
             for (var y = 10; y > 7; y--)
@@ -91,7 +86,7 @@ public class EnemyController : MonoBehaviour
                 enemyLocation.position += Vector3.down / 4;
             }
         }
-
+        secondsBeforeMovement = secondsBeforeMovement * .9f;
         currentHeading = currentHeading == Vector3.right ? Vector3.left : Vector3.right;
     }
 
@@ -107,14 +102,23 @@ public class EnemyController : MonoBehaviour
 
     private IEnumerable<float> AllXPositions()
     {
-        return enemyTransforms.Where(x => x != null).Select(enemyTransform => enemyTransform.position.x);
+        return EnemyTransforms.Select(enemyTransform => enemyTransform.position.x);
     }
 
     private void SpawnBarriers()
     {
-        for (float x = -4; x <= 4; x+=2.5f)
+        for (float x = -4; x <= 4; x += 2.5f)
         {
             Instantiate(barrier, new Vector3(x, 1f, 0f), new Quaternion(0, 0, 0, 0));
         }
+    }
+
+    private void ShootAtPlayer()
+    {
+        var min = EnemyTransforms.Select(item => item.position.y).Min();
+        var closestBaddies = EnemyTransforms.Where(item => item.position.y == min);
+        Random rng = new Random();
+        var firePos = closestBaddies.ElementAt((int)Math.Floor(rng.NextDouble()*closestBaddies.Count()));
+        Instantiate(enemyShot, firePos.position, new Quaternion(0, 0, 0, 0));
     }
 }

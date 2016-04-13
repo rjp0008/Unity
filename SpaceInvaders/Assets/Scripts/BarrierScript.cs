@@ -24,5 +24,9 @@ public class BarrierScript : MonoBehaviour
             Destroy(other.gameObject);
             Destroy(gameObject);
         }
+        if (other.tag == "Baddie")
+        {
+            Destroy(gameObject);
+        }
     }
 }
