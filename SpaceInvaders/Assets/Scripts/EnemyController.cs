@@ -72,7 +72,6 @@ public class EnemyController : MonoBehaviour
             {
                 var enemyInstance = (GameObject)Instantiate(enemy, new Vector3(x, y, 0), new Quaternion(0, 0, 0, 0));
                 enemyTransforms.Add(enemyInstance.transform);
-                enemyInstance.transform.Rotate(Vector3.forward, 90);
             }
         }
     }
